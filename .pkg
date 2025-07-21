@@ -1,0 +1,8 @@
+[sqlite3]
+  url=git@github.com:motis-project/sqlite3.git
+  branch=master
+  commit=0122dd3f2c0416f6a01fbeeac747a879e01047fe
+[json]
+  url=git@github.com:motis-project/json.git
+  branch=develop
+  commit=ccc94522e752a13a0273dfb837ab36f7dbcda5ab

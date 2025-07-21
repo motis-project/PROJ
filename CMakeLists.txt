@@ -171,7 +171,7 @@ include(policies)
 ##############################################
 
 # default config is shared
-option(BUILD_SHARED_LIBS "Build PROJ library shared." ON)
+option(BUILD_SHARED_LIBS "Build PROJ library shared." OFF)
 
 ################################################################################
 # Check for nlohmann_json
@@ -243,7 +243,7 @@ endif()
 # Check for libtiff
 ################################################################################
 
-option(ENABLE_TIFF "Enable TIFF support to read some grids" ON)
+option(ENABLE_TIFF "Enable TIFF support to read some grids" OFF)
 mark_as_advanced(ENABLE_TIFF)
 set(TIFF_ENABLED FALSE)
 if(ENABLE_TIFF)
@@ -264,7 +264,7 @@ endif()
 # Check for curl
 ################################################################################
 
-option(ENABLE_CURL "Enable Curl support" ON)
+option(ENABLE_CURL "Enable Curl support" OFF)
 set(CURL_ENABLED FALSE)
 if(ENABLE_CURL)
   find_package(CURL REQUIRED)
@@ -351,7 +351,7 @@ set(PROJ_DATA_PATH "${CMAKE_INSTALL_FULL_DATADIR}/proj")
 # Tests
 ################################################################################
 
-option(BUILD_TESTING "Build the testing tree." ON)
+option(BUILD_TESTING "Build the testing tree." OFF)
 if(BUILD_TESTING)
   enable_testing()
   include(ProjTest)
@@ -425,8 +425,8 @@ include_directories(${PROJ_SOURCE_DIR}/src)
 add_subdirectory(data)
 add_subdirectory(include)
 add_subdirectory(src)
-add_subdirectory(man)
-add_subdirectory(cmake)
+#add_subdirectory(man)
+#add_subdirectory(cmake)
 if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
@@ -436,7 +436,7 @@ if(BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-add_subdirectory(scripts)
+#add_subdirectory(scripts)
 
 set(docfiles COPYING NEWS.md AUTHORS.md)
 install(FILES ${docfiles}
@@ -464,65 +464,5 @@ if (WIN32 AND EXPORT_PDB)
 
   install(FILES ${pdbFile} DESTINATION lib)
 endif()
-
-################################################################################
-# pkg-config support
-################################################################################
-configure_proj_pc()
-
-install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/proj.pc
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-
-################################################################################
-# "make dist" workalike
-################################################################################
-
-set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "proj-${PROJ_VERSION}")
-set(CPACK_PACKAGE_VENDOR "OSGeo")
-set(CPACK_PACKAGE_VERSION_MAJOR ${PROJ_VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${PROJ_VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${PROJ_VERSION_PATCH})
-set(CPACK_VERBATIM_VARIABLES TRUE)
-set(CPACK_SOURCE_IGNORE_FILES
-  /\\..*  # any file/directory starting with .
-  /.*\\.yml
-  /.*\\.gz
-  /.*\\.zip
-  /.*build.*/
-  \\.deps
-  /autogen\\.sh
-  /autom4te\\.cache
-  /CODE_OF_CONDUCT.md
-  /CONTRIBUTING.md
-  /disabled_workflows/
-  /Dockerfile
-  /docs/
-  /Doxyfile
-  /HOWTO-RELEASE.md
-  /m4/lt*
-  /m4/libtool*
-  /media/
-  /schemas/
-  /test/fuzzers/
-  /test/gigs/.*gie\\.failing
-  /test/postinstall/
-  /travis/
-  ${PROJECT_BINARY_DIR}
-)
-
-include(CPack)
-
-get_property(_is_multi_config_generator GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(NOT _is_multi_config_generator)
-  add_custom_target(dist
-    COMMAND ${CMAKE_MAKE_PROGRAM} package_source
-  )
-  message(STATUS "PROJ: Configured 'dist' target")
-endif()
-
-configure_file(cmake/uninstall.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/proj_uninstall.cmake @ONLY)
-add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/proj_uninstall.cmake)
 
 message(STATUS "EMBED_RESOURCE_FILES=${EMBED_RESOURCE_FILES}")

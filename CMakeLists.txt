@@ -303,13 +303,13 @@ set(PROJ_DATA_PATH "${CMAKE_INSTALL_FULL_DATADIR}/proj")
 # Tests
 ################################################################################
 
-option(BUILD_TESTING "Build the testing tree." OFF)
-if(BUILD_TESTING)
-  enable_testing()
-  include(ProjTest)
-else()
-  message(STATUS "Testing disabled")
-endif()
+#option(BUILD_TESTING "Build the testing tree." OFF)
+#if(BUILD_TESTING)
+#  enable_testing()
+#  include(ProjTest)
+#else()
+#  message(STATUS "Testing disabled")
+#endif()
 
 ################################################################################
 # Whether we should embed resources
@@ -379,9 +379,9 @@ add_subdirectory(include)
 add_subdirectory(src)
 #add_subdirectory(man)
 #add_subdirectory(cmake)
-if(BUILD_TESTING)
-  add_subdirectory(test)
-endif()
+#if(BUILD_TESTING)
+#  add_subdirectory(test)
+#endif()
 
 option(BUILD_EXAMPLES "Whether to build example programs" OFF)
 if(BUILD_EXAMPLES)

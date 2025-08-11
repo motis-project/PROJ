@@ -40,7 +40,8 @@ if (NOT "${PROJ_DB_SQL_MD5}" STREQUAL "${PROJ_DB_SQL_EXPECTED_MD5}")
     file(REMOVE "${PROJ_DB_EXTRA_VALIDATION_FILENAME}")
     execute_process(COMMAND "${EXE_SQLITE3}" "${PROJ_DB_EXTRA_VALIDATION_FILENAME}"
                     INPUT_FILE "${ALL_SQL_IN_EXTRA_VALIDATION}"
-                    RESULT_VARIABLE STATUS)
+                    RESULT_VARIABLE STATUS
+                    COMMAND_ECHO STDOUT)
     if(STATUS AND NOT STATUS EQUAL 0)
       message(FATAL_ERROR "Build of proj.db from ${ALL_SQL_IN_EXTRA_VALIDATION} failed")
     else()
@@ -70,7 +71,8 @@ endif()
 if (generate_proj_db)
     execute_process(COMMAND "${EXE_SQLITE3}" "${PROJ_DB}"
                     INPUT_FILE "${ALL_SQL_IN}"
-                    RESULT_VARIABLE STATUS)
+                    RESULT_VARIABLE STATUS
+                    COMMAND_ECHO STDOUT)
 
     if(STATUS AND NOT STATUS EQUAL 0)
       message(FATAL_ERROR "Build of proj.db failed")

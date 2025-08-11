@@ -38,7 +38,7 @@ if (NOT "${PROJ_DB_SQL_MD5}" STREQUAL "${PROJ_DB_SQL_EXPECTED_MD5}")
 
     set(PROJ_DB_EXTRA_VALIDATION_FILENAME "${PROJ_DB}.extra_validation")
     file(REMOVE "${PROJ_DB_EXTRA_VALIDATION_FILENAME}")
-    execute_process(COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} "${EXE_SQLITE3}" "${PROJ_DB_EXTRA_VALIDATION_FILENAME}"
+    execute_process(COMMAND ${EXE_PREFIX} "${EXE_SQLITE3}" "${PROJ_DB_EXTRA_VALIDATION_FILENAME}"
                     INPUT_FILE "${ALL_SQL_IN_EXTRA_VALIDATION}"
                     RESULT_VARIABLE STATUS
                     COMMAND_ECHO STDOUT)
@@ -69,7 +69,7 @@ if(IS_DIRECTORY ${PROJ_DB_CACHE_DIR})
 endif()
 
 if (generate_proj_db)
-    execute_process(COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} "${EXE_SQLITE3}" "${PROJ_DB}"
+    execute_process(COMMAND ${EXE_PREFIX} "${EXE_SQLITE3}" "${PROJ_DB}"
                     INPUT_FILE "${ALL_SQL_IN}"
                     RESULT_VARIABLE STATUS
                     COMMAND_ECHO STDOUT)

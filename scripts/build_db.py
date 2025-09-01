@@ -626,7 +626,7 @@ def fill_compound_crs(proj_db_cursor):
             raise
 
 def fill_helmert_transformation(proj_db_cursor):
-    proj_db_cursor.execute("SELECT coord_op_code, coord_op_name, coord_op_method_code, coord_op_method_name, source_crs_code, target_crs_code, coord_op_accuracy, coord_tfm_version, epsg_coordoperation.deprecated, epsg_coordoperation.remarks FROM epsg.epsg_coordoperation LEFT JOIN epsg.epsg_coordoperationmethod USING (coord_op_method_code) WHERE coord_op_type = 'transformation' AND coord_op_method_code IN (1031, 1032, 1033, 1034, 1035, 1037, 1038, 1039, 1053, 1054, 1055, 1056, 1057, 1058, 1061, 1062, 1063, 1065, 1066, 1132, 1133, 1140, 9603, 9606, 9607, 9636) ")
+    proj_db_cursor.execute("SELECT coord_op_code, coord_op_name, coord_op_method_code, coord_op_method_name, source_crs_code, target_crs_code, coord_op_accuracy, coord_tfm_version, epsg_coordoperation.deprecated, epsg_coordoperation.remarks FROM epsg.epsg_coordoperation LEFT JOIN epsg.epsg_coordoperationmethod USING (coord_op_method_code) WHERE coord_op_type = 'transformation' AND coord_op_method_code IN (1031, 1032, 1033, 1034, 1035, 1037, 1038, 1039, 1053, 1054, 1055, 1056, 1057, 1058, 1061, 1062, 1063, 1065, 1066, 1132, 1133, 1140, 1149, 9603, 9606, 9607, 9636) ")
     for (code, name, method_code, method_name, source_crs_code, target_crs_code, coord_op_accuracy, coord_tfm_version, deprecated, remarks) in proj_db_cursor.fetchall():
         expected_order = 1
         max_n_params = 15
@@ -650,11 +650,6 @@ def fill_helmert_transformation(proj_db_cursor):
 
         if param_value[0] is None and deprecated:
             continue # silently discard non sense deprecated transforms (like EPSG:1076)
-
-        # FIXME: Issue in EPSG 12.017. To be removed once EPSG fixes it
-        if code == 10953 and method_name == "Time-dependent Coordinate Frame rotation (geocen)":
-            print(f"Skipping Helmert transformation {code} {name} as it is a {method_name} between 2 static CRS")
-            continue
 
         assert param_code[0] == 8605
         assert param_code[1] == 8606
@@ -738,10 +733,15 @@ def fill_helmert_transformation(proj_db_cursor):
             '?,?,?, ?, ?,?,?, ?,?, ?,?, ?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?,?,?, ?,?)', arg)
 
 def fill_grid_transformation(proj_db_cursor):
-    proj_db_cursor.execute("SELECT coord_op_code, coord_op_name, coord_op_method_code, coord_op_method_name, source_crs_code, target_crs_code, coord_op_accuracy, coord_tfm_version, epsg_coordoperation.deprecated, epsg_coordoperation.remarks FROM epsg.epsg_coordoperation LEFT JOIN epsg.epsg_coordoperationmethod USING (coord_op_method_code) WHERE coord_op_type IN ('transformation', 'point motion operation') AND coord_op_method_code NOT IN (1131, 1136) AND (coord_op_method_name LIKE 'Geographic3D to%' OR coord_op_method_name LIKE 'Geog3D to%' OR coord_op_method_name LIKE 'Point motion by grid%' OR coord_op_method_name LIKE 'Vertical % by %grid%' OR coord_op_method_name IN ('NADCON', 'NADCON5 (2D)', 'NADCON5 (3D)', 'NTv1', 'NTv2', 'VERTCON', 'Geocentric translation by Grid Interpolation (IGN)', 'Geographic3D Offset by velocity grid (NTv2_Vel)', 'New Zealand Deformation Model', 'Cartesian Grid Offsets by TIN Interpolation (JSON)', 'Vertical Offset by TIN Interpolation (JSON)'))")
+    proj_db_cursor.execute("SELECT coord_op_code, coord_op_name, coord_op_method_code, coord_op_method_name, source_crs_code, target_crs_code, coord_op_accuracy, coord_tfm_version, epsg_coordoperation.deprecated, epsg_coordoperation.remarks FROM epsg.epsg_coordoperation LEFT JOIN epsg.epsg_coordoperationmethod USING (coord_op_method_code) WHERE coord_op_type IN ('transformation', 'point motion operation') AND coord_op_method_code NOT IN (1131, 1136) AND (coord_op_method_name LIKE 'Geographic3D to%' OR coord_op_method_name LIKE 'Geog3D to%' OR coord_op_method_name LIKE 'Point motion % grid%' OR coord_op_method_name LIKE 'Vertical Offset %rid%' OR coord_op_method_name LIKE 'Geographic3D Offset % velocity %rid%' OR coord_op_method_name IN ('NADCON', 'NADCON5 (2D)', 'NADCON5 (3D)', 'NTv1', 'NTv2', 'VERTCON', 'Geocentric translations (geog2D domain) by grid (IGN)', 'New Zealand Deformation Model', 'Cartesian Grid Offsets by TIN Interpolation (JSON)', 'Vertical Offset by TIN Interpolation (JSON)', 'Geographic2D Offsets by TIN Interpolation (JSON)', 'Vertical change by geoid grid difference (NRCan)'))")
     for (code, name, method_code, method_name, source_crs_code, target_crs_code, coord_op_accuracy, coord_tfm_version, deprecated, remarks) in proj_db_cursor.fetchall():
+
+        if code == 10929: # SOPAC deformation model for California v1
+            print(f"Skipping transformation {code} ({name})")
+            continue
+
         expected_order = 1
-        max_n_params = 3 if method_name == 'Geocentric translation by Grid Interpolation (IGN)' else 2
+        max_n_params = 3 if method_name == 'Geocentric translations (geog2D domain) by grid (IGN)' else 2
         param_auth_name = [None for i in range(max_n_params)]
         param_code = [None for i in range(max_n_params)]
         param_name = [None for i in range(max_n_params)]
@@ -804,6 +804,7 @@ def fill_grid_transformation(proj_db_cursor):
         # 1083: Geog3D to Geog2D+Vertical (AUSGeoid v2)
         # 1084: Vertical Offset by Grid Interpolation (gtx)
         # 1085: Vertical Offset by Grid Interpolation (asc)
+        # 1086: Point motion (geocen domain) using XYZ velocity grid (INADEFORM)
         # 1088: Geog3D to Geog2D+GravityRelatedHeight (gtx)
         # 1089: Geog3D to Geog2D+GravityRelatedHeight (BEV AT)
         # 1090: Geog3D to Geog2D+GravityRelatedHeight (CGG 2013)
@@ -825,6 +826,7 @@ def fill_grid_transformation(proj_db_cursor):
         # 1114: Geographic3D Offset by velocity grid (NTv2_Vel)
         # 1115: Geog3D to Geog2D+Depth (txt)
         # 1118: Geog3D to Geog2D+GravityRelatedHeight (ISG)
+        # 1120: Point motion (geocen domain) using XYZ velocity grid (BGN)
         # 1122: Geog3D to Geog2D+Depth (gtx)
         # 1124: Geog3D to Geog2D+GravityRelatedHeight (gtg)
         # 1126: Vertical change by geoid grid difference (NRCan)
@@ -834,7 +836,7 @@ def fill_grid_transformation(proj_db_cursor):
         # 1141: Point motion by grid (NEU domain) (NTv2_Vel)
         # WARNING: update Transformation::isGeographic3DToGravityRelatedHeight()
         # in src/iso19111/operation/singleoperation.cpp if adding new methods
-        elif method_code in (1071, 1080, 1081, 1083, 1084, 1085, 1088, 1089, 1090, 1091, 1092, 1093, 1094, 1095, 1096, 1097, 1098, 1100, 1101, 1103, 1105, 1110, 1112, 1113, 1114, 1115, 1118, 1122, 1124, 1126, 1128, 1129, 1135, 1137, 1138, 1141) and n_params == 2:
+        elif method_code in (1071, 1080, 1081, 1083, 1084, 1085, 1086, 1088, 1089, 1090, 1091, 1092, 1093, 1094, 1095, 1096, 1097, 1098, 1100, 1101, 1103, 1105, 1110, 1112, 1113, 1114, 1115, 1118, 1120, 1122, 1124, 1126, 1128, 1129, 1135, 1137, 1138, 1141) and n_params == 2:
             assert param_code[1] == 1048, (code, method_code, param_code[1])
             interpolation_crs_auth_name = EPSG_AUTHORITY
             interpolation_crs_code = str(int(param_value[1])) # needed to avoid codes like XXXX.0
